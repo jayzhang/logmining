@@ -6,5 +6,6 @@ line and group them into clusters.
 
 # Usage
 ```
+npm install
 node .\dist\processErrorMsg.js <error excel file path>
 ```
