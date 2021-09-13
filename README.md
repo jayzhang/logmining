@@ -47,9 +47,9 @@ The clustering results have two files in the same folder of input excel file: on
 
 ![image](https://user-images.githubusercontent.com/1658418/133027355-b4083fdf-e307-4c49-9ea3-8128be165059.png)
 
-The html file is a list of clusters:
+The html file is a list of clusters (order by the size of cluster):
 
-[image](https://user-images.githubusercontent.com/1658418/133027092-aa157dfb-b7b7-4e53-b12e-f53c0ca04078.png)
+![image](https://user-images.githubusercontent.com/1658418/133027470-a48d27ee-5e2e-4522-a85e-fdb49f658e58.png)
 
 The json file is the json data of clusters, including some basic statistics of clusters:
 
