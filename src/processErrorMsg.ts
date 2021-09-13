@@ -135,21 +135,24 @@ const xData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
 
 let logs: ILog[] = xData.map((l: any)=>{
   delete l.Properties;
+  let content = l.errorMsg;
+  const i = l.errorMsg.indexOf("\nstack:\n");
+  if(i >= 0) {
+    content = content.substr(0, i);
+  }
   const log:ILog = {
-    content: l.errorMsg,
+    content: content,
     ... l
   };
   return log;
 });
 
-const clusters = clustering(logs);
-
-const outputFolder = path.resolve(process.argv[3]);
+const clusters = clustering(logs, 0.8);
 
 const html = reportHtml(clusters, logs);
 
-fs.writeFileSync(path.join(outputFolder, "clusters.html"), html);
+fs.writeFileSync(inputPath + ".clusters.html", html);
 
 const json = reportJson(clusters, logs);
 
-fs.writeJsonSync(path.join(outputFolder, "clusters.json"), json);
+fs.writeJsonSync(inputPath + ".clusters.json", json);

@@ -8,7 +8,7 @@ import crypto from "crypto";
 export interface Cluster {
   representIndex: number;
   memberIndexes: number[];
-  representRaw?: any;
+  representRaw?: ILog;
   represent?: Token[];
   pattern? : Token[];
 }
@@ -120,7 +120,7 @@ function clusteringOnce(inputs: Cluster[], minsim: number) : Cluster[] {
   for(const input of inputs) {
      const log = input.representRaw;
      if(log) {
-        input.represent = tokenize(log.errorMsg);
+        input.represent = tokenize(log.content);
      }
   }
   const clusters: Cluster[] = [{...inputs[0]}];
