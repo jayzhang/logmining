@@ -43,7 +43,9 @@ node .\dist\processErrorMsg.js <error excel file path>
 
 ## View clustering results
 
-The clustering results have two files: one html file and one json file.
+The clustering results have two files in the same folder of input excel file: one html file and one json file:
+
+![image](https://user-images.githubusercontent.com/1658418/133027355-b4083fdf-e307-4c49-9ea3-8128be165059.png)
 
 The html file is a list of clusters:
 
