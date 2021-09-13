@@ -7,5 +7,6 @@ line and group them into clusters.
 # Usage
 ```
 npm install
+npm run build
 node .\dist\processErrorMsg.js <error excel file path>
 ```
