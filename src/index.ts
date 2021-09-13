@@ -3,20 +3,22 @@ import * as lcs from "lcs-diff";
 import isNumber from "is-number";
 import * as check from "@techmmunity/easy-check";
 import crypto from "crypto";
-import XLSX from "xlsx";
 
 
-
-function tokenize(input: string): Token[] {
-  const array = tokenizelib(input);
-  const tokens = array.map(t=> {
-    const type = checkType(t);
-    return {text: t, type: type} as Token;
-  });
-  return tokens;
+export interface Cluster {
+  representIndex: number;
+  memberIndexes: number[];
+  representRaw?: any;
+  represent?: Token[];
+  pattern? : Token[];
 }
 
-enum TokenType {
+export interface ILog {
+  content: string;
+}
+
+
+export enum TokenType {
   raw = "[raw]",
   number = "[number]",
   email = "[email]",
@@ -27,9 +29,41 @@ enum TokenType {
   wildcard = "[*]",
 }
 
-interface Token {
+export interface Token {
   text?: string,
   type: TokenType,
+}
+
+
+export function clustering(logs: ILog[], minSimilarity = 0.6): Cluster[] {
+  //1. merge logs with identical content
+  const hashMap = new Map<string, Cluster>();
+  for(let index = 0 ; index < logs.length; ++ index){
+    const log = logs[index];
+    const hash = crypto.createHash('md5').update(log.content.trim()).digest('hex');
+    let c = hashMap.get(hash);
+    if(!c) {
+      c = { representIndex: index, memberIndexes: [index] , representRaw: log};
+      hashMap.set(hash, c);
+    }
+    else {
+      c.memberIndexes.push(index);
+    }
+  } 
+
+  // 2. clustering
+  let clusters = Array.from(hashMap.values());
+  clusters = clusteringOnce(clusters, minSimilarity);
+  return clusters;
+}
+
+function tokenize(input: string): Token[] {
+  const array = tokenizelib(input);
+  const tokens = array.map(t=> {
+    const type = checkType(t);
+    return {text: t, type: type} as Token;
+  });
+  return tokens;
 }
 
 function checkType(word: string) : TokenType {
@@ -62,23 +96,6 @@ function merge(lcs: lcs.LCS<Token>): Token[]{
   }
   return results;
 }
-function cleanPattern(tokens: Token[]) {
-  const results: Token[] = [];
-  let preIsWC = false;
-  for(const t of tokens) {
-    if(t.type === TokenType.wildcard && preIsWC) {
-      continue;
-    }
-    results.push(t);
-    if(t.type === TokenType.wildcard) {
-      preIsWC = true;
-    }
-    else {
-      preIsWC = false;
-    }
-  }
-  return results;
-}
 
 function compare(list1: Token[], list2: Token[]) {
   let results = new lcs.LCS({
@@ -94,60 +111,7 @@ function compare(list1: Token[], list2: Token[]) {
   return results;
 }
 
-function toString(tokens: Token[]) {
-  const patternStr = tokens.map(i=>{
-    if(i.type === TokenType.raw) return i.text;
-    else return `<b>${i.type}</b>`;
-  }).join(" ");
-  return patternStr;
-}
- 
-interface Cluster {
-  representIndex: number;
-  memberIndexes: number[];
-  representRaw?: any;
-  represent?: Token[];
-  mergeSims?:number[];
-  pattern? : Token[];
-}
 
-
-
-function logmine(logs: any[], minSimilarity = 0.6) {
-  logs = logs.filter(l=>l.errorMsg).map(l=>{
-    delete l.Properties;
-    return l;
-  });
-  //1. merge logs with identical content
-  const hashMap = new Map<string, Cluster>();
-  logs.reduce((map, log: any, index: number, array: any[])=>{
-    const msg = log.errorMsg as string;
-    const hash = crypto.createHash('md5').update(msg.trim()).digest('hex');
-    let c:Cluster|undefined = hashMap.get(hash);
-    if(c === undefined) {
-      c = { representIndex: index, memberIndexes: [index] , representRaw: log, mergeSims:[]};
-      hashMap.set(hash, c);
-    }
-    else {
-      c.memberIndexes.push(index);
-    }
-  });
-
-  // 2. clustering
-  let clusters = Array.from(hashMap.values());
-  let minSim = 1;
-  clusters = clusteringOnce(clusters, minSimilarity);
-
-  // 3. print
-  // const html = reportHtml(clusters, logs);
-  // console.log(html);
-
-  const json = reportJson(clusters, logs);
-  console.log(JSON.stringify(json));
-
-  // addClusterFields(clusters, logs);
-  // console.log(JSON.stringify(logs));
-}
 
 function clusteringOnce(inputs: Cluster[], minsim: number) : Cluster[] {
   if(inputs.length === 1) {
@@ -172,7 +136,6 @@ function clusteringOnce(inputs: Cluster[], minsim: number) : Cluster[] {
             for(const index of input.memberIndexes) {
               cluster.memberIndexes.push(index);
             }
-            cluster.mergeSims?.push(sim);
             // update pattern
             if(!cluster.pattern){
               cluster.pattern = merge(results);
@@ -194,103 +157,3 @@ function clusteringOnce(inputs: Cluster[], minsim: number) : Cluster[] {
   }
   return clusters;
 }
-
-function reportHtml(clusters: Cluster[], logs: any[]): string{
-  let html = `<h>#total:${logs.length},#patterns:${clusters.length}</h>`;
-  clusters = clusters.sort((a,b)=>{return b.memberIndexes.length - a.memberIndexes.length});
-  for( const c of clusters) {
-    const pattern = c.pattern ? c.pattern : c.represent;
-    const cleaned = cleanPattern(pattern!);
-    let str = toString(cleaned!);
-    const pct = (c.memberIndexes.length*100/logs.length).toFixed(3);
-    const set = new Set<string>();
-    let detail = c.memberIndexes.map(i=>{
-      const log = logs[i];
-      set.add(log['event']);
-      return `\t\t<details><summary>${log.errorMsg}</summary><pre><code>${JSON.stringify(logs[i], undefined, 4)}</code></pre></details>`;
-    }).join('\n');
-
-    html += `<details>\n\t<summary>\n Frequent: ${c.memberIndexes.length}, Percentage: ${pct}%, Events: ${JSON.stringify(Array.from(set))}, Pattern: ${str}\t</summary>\n<ul>${detail}</ul></details>\n`;
-  }
-  return html;
-}
-
-interface ClusterView {
-  count: number,
-  percent: number, 
-  pattern: string,
-  events: string,
-  errorCodes: string,
-  versions: string,
-}
-
-function reportJson(clusters: Cluster[], logs: any[]): ClusterView[] {
-  const cvs: ClusterView[] = [];
-  clusters = clusters.sort((a,b)=>{return b.memberIndexes.length - a.memberIndexes.length});
-  for( const c of clusters) {
-    const pattern = c.pattern ? c.pattern : c.represent;
-    const cleaned = cleanPattern(pattern!);
-    let str = toString(cleaned!);
-    const pct = Number((c.memberIndexes.length*100/logs.length).toFixed(3));
-    const events: any = {};
-    const errorCodes: any = {};
-    const versions: any = {};
-    let detail = c.memberIndexes.map(i=>{
-      const log = logs[i];
-      const event = log.event;
-      const errorCode = log.errorCode;
-      const version = log.version;
-      if(events[event]) {
-        events[event] ++;
-      }
-      else {
-        events[event] = 1;
-      }
-      if(errorCodes[errorCode]) {
-        errorCodes[errorCode] ++;
-      }
-      else {
-        errorCodes[errorCode] = 1;
-      }
-      if(versions[version]) {
-        versions[version] ++;
-      }
-      else {
-        versions[version] = 1;
-      }
-    });
-    const view:ClusterView = {
-      count:c.memberIndexes.length,
-      pattern: str,
-      percent: pct,
-      events: JSON.stringify(events),
-      errorCodes: JSON.stringify(errorCodes),
-      versions: JSON.stringify(versions),
-    };
-    cvs.push(view);
-  }
-  return cvs;
-}
-
-
-
-function addClusterFields(clusters: Cluster[], logs: any[]) {
-  for( const c of clusters) {
-    const pattern = c.pattern ? c.pattern : c.represent;
-    const cleaned = cleanPattern(pattern!);
-    const str = toString(cleaned!);
-    const clusterId = crypto.createHash('md5').update(str.trim()).digest('hex');
-    for(let index of c.memberIndexes) {
-      logs[index].clusterId = clusterId;
-      logs[index].pattern = pattern;
-      logs[index].occurNumber = c.memberIndexes.length;
-    }
-  }
-}
-
-
-
-const workbook = XLSX.readFile(process.argv[2]);
-const sheet_name_list = workbook.SheetNames;
-const xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-logmine(xlData);
