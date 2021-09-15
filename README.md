@@ -1,10 +1,27 @@
-# logmine
+# logmining
 This is an simplified implementation of the paper [LogMine: Fast Pattern
 Recognition for Log Analytics](https://www.cs.unm.edu/~mueen/Papers/LogMine.pdf).
 The idea is to use a distance function to calculate a distance between to log
 line and group them into clusters.
 
-# Usage for Error clustering analysis
+# basic usage
+
+```
+npm install logmining
+```
+
+```
+import { Cluster, clustering, ILog, Token, TokenType } from "logmining";
+
+const logs:Ilog[] = ...
+
+const clusters = clustering(logs);
+
+//view clusters
+
+```
+
+# Usage for Error clustering analysis for TeamsFx Errors
 
 ## Export data in Azure Data Explorer
 

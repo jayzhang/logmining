@@ -1,11 +1,11 @@
 {
-  "name": "logmine",
+  "name": "logmining",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jayzhang/logmine"
+    "url": "https://github.com/jayzhang/logmining"
   },
   "files": [
     "dist/**/*"
