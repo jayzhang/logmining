@@ -31,6 +31,7 @@
     "@techmmunity/easy-check": "^3.3.1",
     "fs-extra": "^9.1.0",
     "is-number": "^7.0.0",
-    "lcs-diff": "^1.0.5"
+    "lcs-diff": "^1.0.5",
+    "xlsx": "^0.17.1"
   }
 }
