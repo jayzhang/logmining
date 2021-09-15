@@ -5,7 +5,7 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OfficeDev/TeamsFx"
+    "url": "https://github.com/jayzhang/logmine"
   },
   "files": [
     "dist/**/*"
