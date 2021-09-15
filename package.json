@@ -2,12 +2,21 @@
   "name": "logmine",
   "version": "1.0.0",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OfficeDev/TeamsFx"
+  },
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p ./",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
   },
-  "author": "",
+  "author": "Huajie Zhang",
   "license": "ISC",
   "description": "",
   "devDependencies": {
@@ -20,10 +29,8 @@
   "dependencies": {
     "@stdlib/nlp-tokenize": "0.0.7",
     "@techmmunity/easy-check": "^3.3.1",
-    "azure-kusto-data": "^2.2.2",
     "fs-extra": "^9.1.0",
     "is-number": "^7.0.0",
-    "lcs-diff": "^1.0.5",
-    "xlsx": "^0.17.1"
+    "lcs-diff": "^1.0.5"
   }
 }
