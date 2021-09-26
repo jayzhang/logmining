@@ -3,7 +3,6 @@ import * as check from "@techmmunity/easy-check";
 import crypto from "crypto";
 import isNumber from "is-number";
 import * as lcs from "lcs-diff";
-import porterStemmer from "@stdlib/nlp-porter-stemmer";
 
 export interface Cluster {
   representIndex: number;
