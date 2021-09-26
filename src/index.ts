@@ -20,14 +20,15 @@ export interface ILog {
 
 
 export enum TokenType {
-  raw = "[raw]",
-  number = "[number]",
-  email = "[email]",
-  ip = "[ip]",
-  url = "[url]",
-  path = "[path]",
-  uuid = "[uuid]",
-  wildcard = "[*]",
+  raw = "",
+  witespace = "_T_SPACE_",
+  number = "_T_NUMBER_",
+  email = "_T_EMAIL_",
+  ip = "_T_IP_",
+  url = "_T_URL_",
+  path = "_T_PATH_",
+  uuid = "_T_UUID_",
+  wildcard = "_T_ANY_"
 }
 
 export interface Token {
@@ -58,9 +59,12 @@ export function clustering(logs: ILog[], minSimilarity = 0.6): Cluster[] {
   return clusters;
 }
 
-function tokenize(input: string): Token[] {
-  const array = tokenizelib(input);
+export function tokenize(input: string): Token[] {
+  const array = tokenizelib(input, true);
   const tokens = array.map(t=> {
+    if(isWhitespace(t)){
+      return {text: t, type: TokenType.witespace}
+    }
     const type = checkType(t);
     return {text: t, type: type} as Token;
   });
@@ -68,22 +72,22 @@ function tokenize(input: string): Token[] {
 }
 
 function checkType(word: string) : TokenType {
-  if(check.isEmail(word)){
+  if(word === TokenType.email || check.isEmail(word)){
     return TokenType.email;
   }
-  if(check.isIpv4(word) || check.isIpv4WithMask(word)){
+  if(word === TokenType.ip || check.isIpv4(word) || check.isIpv4WithMask(word)){
     return TokenType.ip;
   }
-  if(isNumber(word)) {
+  if(word === TokenType.number || isNumber(word)) {
     return TokenType.number;
   }
-  if(check.isUrl(word)){
+  if(word === TokenType.url || check.isUrl(word)){
     return TokenType.url;
   }
-  if(word === '_PATH_'){
+  if(word === TokenType.path || word === '_PATH_'){
     return TokenType.path;
   }
-  if(check.isUUIDv4(word) || check.isHerokuApiKey(word)){
+  if(word === TokenType.uuid || check.isUUIDv4(word) || check.isHerokuApiKey(word)){
     return TokenType.uuid;
   }
   return TokenType.raw;
@@ -157,4 +161,17 @@ function clusteringOnce(inputs: Cluster[], minsim: number) : Cluster[] {
     }
   }
   return clusters;
+}
+
+export function toString(tokens: Token[]) {
+  const array = tokens.map(t => {
+    if(t.type === TokenType.witespace) return " ";
+    if(t.type === TokenType.raw) return t.text;
+    return t.type;
+  });
+  return array.join("");
+}
+
+export function isWhitespace(character: string) {
+  return /^\s+$/.test(character)
 }
