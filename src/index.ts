@@ -186,7 +186,7 @@ function compare(list1: Token[], list2: Token[]) {
     },
     compare : (t1,t2)=>{
       if(
-        (!t1.c && !t2.c && t1.t && t2.t &&  (t1.t === t2.t || porterStemmer(t1.t) === porterStemmer(t2.t) ))
+        (!t1.c && !t2.c && t1.t && t2.t &&  t1.t === t2.t)
         || (t1.c && t2.c && t1.c === t2.c) 
         || t1.c === TokenType.wildcard 
         || t2.c === TokenType.wildcard
