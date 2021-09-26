@@ -1,6 +1,6 @@
 {
   "name": "logmining",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": {
@@ -27,6 +27,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
+    "@stdlib/nlp-porter-stemmer": "0.0.6",
     "@stdlib/nlp-tokenize": "0.0.7",
     "@techmmunity/easy-check": "^3.3.1",
     "is-number": "^7.0.0",
