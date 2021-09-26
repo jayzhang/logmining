@@ -15,6 +15,7 @@ export interface Cluster {
 
 export interface ILog {
   content: string;
+  raw: any;
 }
 
 
